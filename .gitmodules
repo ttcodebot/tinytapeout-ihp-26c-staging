@@ -7,6 +7,3 @@
 [submodule "IHP-Open-PDK"]
 	path = IHP-Open-PDK
 	url = https://github.com/TinyTapeout/IHP-Open-PDK
-[submodule "librelane"]
-	path = librelane
-	url = https://github.com/TinyTapeout/librelane

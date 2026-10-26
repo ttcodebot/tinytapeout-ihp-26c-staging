@@ -31,9 +31,9 @@ jobs:
 
       # Nix 2.35.0 (2026-07-13) added an isShallow() guard throwing
       # "is a shallow Git repository, so 'revCount' is not available".
-      # Work around this by unshallowing the librelane submodule.
-      - name: Unshallow the librelane submodule
-        run: git -C librelane fetch --unshallow
+      # flake-compat runs fetchGit on the tt-multiplexer checkout, so unshallow it.
+      - name: Unshallow the tt-multiplexer submodule
+        run: git -C tt-multiplexer fetch --unshallow
 
       - name: Free Disk Space (Ubuntu)
         uses: jlumbroso/free-disk-space@main
@@ -61,15 +61,15 @@ jobs:
             extra-trusted-public-keys = nix-cache.fossi-foundation.org:3+K59iFwXqKsL7BNu6Guy0v+uTlwsxYQxjspXzqLYQs=
 
       - name: Harden Chip ROM
-        run: nix-shell $GITHUB_WORKSPACE/librelane/shell.nix --run "python -m librelane --pdk-root $PDK_ROOT --manual-pdk --pdk $PDK tt/rom/config.json"
+        run: nix-shell $GITHUB_WORKSPACE/tt-multiplexer/shell.nix --run "python -m librelane --pdk-root $PDK_ROOT --manual-pdk --pdk $PDK tt/rom/config.json"
 
       - name: Harden tt_ctrl
         working-directory: tt-multiplexer/ol2/tt_ctrl
-        run: nix-shell $GITHUB_WORKSPACE/librelane/shell.nix --run "python build.py"
+        run: nix-shell $GITHUB_WORKSPACE/tt-multiplexer/shell.nix --run "python build.py"
 
       - name: Harden tt_mux
         working-directory: tt-multiplexer/ol2/tt_mux
-        run: nix-shell $GITHUB_WORKSPACE/librelane/shell.nix --run "python build.py"
+        run: nix-shell $GITHUB_WORKSPACE/tt-multiplexer/shell.nix --run "python build.py"
 
       - name: Copy macros
         run: python ./tt/configure.py --copy-macros
@@ -84,7 +84,7 @@ jobs:
 
       - name: Harden tt_top
         working-directory: tt-multiplexer/ol2/tt_top
-        run: nix-shell $GITHUB_WORKSPACE/librelane/shell.nix --run "python build.py"
+        run: nix-shell $GITHUB_WORKSPACE/tt-multiplexer/shell.nix --run "python build.py"
 
       - name: Copy final results
         run: python ./tt/configure.py --copy-final-results

@@ -3,13 +3,14 @@
 ## Environment setup
 
 ```bash
-export LIBRELANE_ROOT=`pwd`/librelane
+export TT_SHELL=`pwd`/tt-multiplexer/shell.nix
 export PDK_ROOT=`pwd`/IHP-Open-PDK
 export PDK=ihp-sg13g2
 export TT_CONFIG=ihp-sg13g2.yaml
 ```
 
-Then install LibreLane with Nix, as explained [here](https://librelane.readthedocs.io/en/latest/getting_started/common/nix_installation/index.html).
+Then install Nix, as explained [here](https://librelane.readthedocs.io/en/latest/getting_started/common/nix_installation/index.html).
+LibreLane itself comes from the Nix shell defined in `tt-multiplexer/shell.nix` (see its `flake.nix` for the pinned version).
 
 ## Repository setup
 
@@ -36,11 +37,11 @@ python tt/configure.py --update-shuttle
 ## Harden
 
 ```bash
-nix-shell ${LIBRELANE_ROOT}/shell.nix --run "python -m librelane --pdk-root $PDK_ROOT --manual-pdk --pdk $PDK tt/rom/config.json"
-nix-shell ${LIBRELANE_ROOT}/shell.nix --run "cd tt-multiplexer/ol2/tt_ctrl && python build.py"
-nix-shell ${LIBRELANE_ROOT}/shell.nix --run "cd tt-multiplexer/ol2/tt_mux && python build.py"
+nix-shell ${TT_SHELL} --run "python -m librelane --pdk-root $PDK_ROOT --manual-pdk --pdk $PDK tt/rom/config.json"
+nix-shell ${TT_SHELL} --run "cd tt-multiplexer/ol2/tt_ctrl && python build.py"
+nix-shell ${TT_SHELL} --run "cd tt-multiplexer/ol2/tt_mux && python build.py"
 python tt/configure.py --copy-macros
-nix-shell ${LIBRELANE_ROOT}/shell.nix --run "cd tt-multiplexer/ol2/tt_top && python build.py"
+nix-shell ${TT_SHELL} --run "cd tt-multiplexer/ol2/tt_top && python build.py"
 ```
 
 You'll find the final GDS in `tt-multiplexer/ol2/tt_top/runs/RUN_*/final/gds/openframe_project_wrapper.gds`. To copy it (along with the lef, gl verilog, and spef files), run:
