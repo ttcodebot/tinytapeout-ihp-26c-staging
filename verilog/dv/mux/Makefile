@@ -43,6 +43,9 @@ else ifeq ($(SIM),icarus)
   endif
 endif
 
+# Patched stdcell model for GL sims, see the workaround below
+STDCELL_MODEL_PATCHED := $(abspath models/sg13cmos5l_stdcell.v)
+
 # Alter behaviour between GLS & fast functional sims
 ifeq ($(GATES),yes)
   COMPILE_ARGS    += -i -f $(abspath ../../includes/includes.gl.mux_top)
@@ -50,7 +53,7 @@ ifeq ($(GATES),yes)
   COMPILE_ARGS    += -DFUNCTIONAL
   COMPILE_ARGS    += -DSIM
   VERILOG_SOURCES += $(PDK_ROOT)/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/verilog/sg13cmos5l_udp.v
-  VERILOG_SOURCES += $(PDK_ROOT)/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/verilog/sg13cmos5l_stdcell.v
+  VERILOG_SOURCES += $(STDCELL_MODEL_PATCHED)
   SIM_BUILD       := sim_build_gates
 else
   COMPILE_ARGS    += -DRTL_TESTBENCH
@@ -67,6 +70,18 @@ PYTHON_PATHS += $(abspath .)
 export PYTHONPATH := $(subst $(SPACE),:,$(PYTHON_PATHS)):$(PYTHONPATH)
 
 include $(shell cocotb-config --makefiles)/Makefile.sim
+
+# Temporary workaround: since IHP-Open-PDK 1a98e68e, the stdcell models drive the
+# tristate cell outputs (ebufn / einvn) through `buf (Z, raw_Z)`, which turns high-Z
+# into X and breaks the tristate spine between tt_ctrl and the muxes.
+# Simulate with a copy of the model where those outputs are passed through as-is
+# (STDCELL_MODEL_PATCHED is defined above).
+$(STDCELL_MODEL_PATCHED): $(PDK_ROOT)/ihp-sg13cmos5l/libs.ref/sg13cmos5l_stdcell/verilog/sg13cmos5l_stdcell.v
+	mkdir -p $(dir $@)
+	sed 's/^\(\s*\)buf (Z, raw_Z);/\1assign Z = raw_Z;/' $< > $@
+
+clean::
+	rm -rf models
 
 # ==============================================================================
 # Simulation
