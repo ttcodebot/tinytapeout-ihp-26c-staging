@@ -14,7 +14,7 @@ on:
 jobs:
   gds:
     env:
-      FOUNDRY_ID: TT2609
+      FOUNDRY_ID: TT26XX # TODO: placeholder, set the IHP tapeout ID
       PYTHONIOENCODING: utf-8
       PDK: ihp-sg13cmos5l
       PDK_ROOT: ${{ github.workspace }}/IHP-Open-PDK
