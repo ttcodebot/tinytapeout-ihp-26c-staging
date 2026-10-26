@@ -1,5 +1,5 @@
-id: 'ttihp26c'
-name: 'Tiny Tapeout IHP 26c'
+id: 'ttihp27a'
+name: 'Tiny Tapeout IHP 27a'
 pdk: 'ihp-sg13cmos5l'
 end_date: '2026-12-31' # TODO: placeholder, set the actual submission deadline
 project_dir: 'projects'

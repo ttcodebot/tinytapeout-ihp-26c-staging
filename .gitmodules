@@ -2,7 +2,7 @@
 	path = tt-multiplexer
 	# TODO: switch back to TinyTapeout/tt-multiplexer once the librelane flake.lock bump is merged upstream
 	url = https://github.com/ttcodebot/tt-multiplexer
-	branch = dev-ihp-sg13cmos5l-ttihp26c
+	branch = dev-ihp-sg13cmos5l-ttihp27a
 [submodule "tt"]
 	path = tt
 	# TODO: switch back to TinyTapeout/tt-support-tools main once ihp-sg13cmos5l support is merged upstream
