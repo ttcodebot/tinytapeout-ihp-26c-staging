@@ -16,9 +16,9 @@ jobs:
     env:
       FOUNDRY_ID: TT2609
       PYTHONIOENCODING: utf-8
-      PDK: ihp-sg13g2
+      PDK: ihp-sg13cmos5l
       PDK_ROOT: ${{ github.workspace }}/IHP-Open-PDK
-      TT_CONFIG: ihp-sg13g2.yaml
+      TT_CONFIG: ihp-sg13cmos5l-36.yaml
       # Uncomment the following line to build only the specified projects:
       #TT_ONLY_PROJECTS: tt_um_chip_rom,tt_um_factory_test
 

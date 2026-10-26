@@ -11,7 +11,7 @@ jobs:
     name: Check user project submission
     runs-on: ubuntu-24.04
     env:
-      TT_CONFIG: ihp-sg13g2.yaml
+      TT_CONFIG: ihp-sg13cmos5l-36.yaml
     steps:
       - name: checkout repo
         uses: actions/checkout@v7
@@ -40,11 +40,11 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-24.04
     env:
-      PDK: ihp-sg13g2
-      PDK_ROOT: /home/runner/pdk
-      PDK_NAME: ihp-sg13g2
-      PDK_VERSION: c4b8b4e5e7a05f375cca3815d51b3a37721fbf5c
-      TECH: ihp-sg13g2
+      PDK: ihp-sg13cmos5l
+      # Use the same PDK checkout (IHP-Open-PDK submodule) as the shuttle build
+      PDK_ROOT: ${{ github.workspace }}/IHP-Open-PDK
+      PDK_NAME: ihp-sg13cmos5l
+      TECH: ihp-sg13cmos5l
     steps:
       - name: checkout repo
         uses: actions/checkout@v7
@@ -61,13 +61,6 @@ jobs:
         shell: bash
         working-directory: tt/precheck
         run: pip install -r requirements.txt
-
-      - name: Install ${{ env.PDK }} PDK
-        uses: TinyTapeout/ciel-action@v1
-        with:
-          pdk_name: ${{ env.PDK }}
-          pdk_version: ${{ env.PDK_VERSION }}
-          pdk_root: ${{ env.PDK_ROOT }}
 
       - name: Install Nix
         uses: rikhuijzer/cache-install@v1.1.4

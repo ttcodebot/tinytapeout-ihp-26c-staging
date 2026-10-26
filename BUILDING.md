@@ -5,8 +5,8 @@
 ```bash
 export TT_SHELL=`pwd`/tt-multiplexer/shell.nix
 export PDK_ROOT=`pwd`/IHP-Open-PDK
-export PDK=ihp-sg13g2
-export TT_CONFIG=ihp-sg13g2.yaml
+export PDK=ihp-sg13cmos5l
+export TT_CONFIG=ihp-sg13cmos5l-36.yaml
 ```
 
 Then install Nix, as explained [here](https://librelane.readthedocs.io/en/latest/getting_started/common/nix_installation/index.html).

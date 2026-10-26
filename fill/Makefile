@@ -25,12 +25,13 @@ $(TMP_DIR)/step-fill1.gds: $(TMP_DIR)/step-simplify.gds | $(TMP_DIR)
 		-rd no_topmetal \
 		$<
 
-# Step 4: Fill Metal1-5, TopMetal1-2
+# Step 4: Fill Metal1-4 (TopMetal1 carries the chip power grid, so it's not filled)
 $(TMP_DIR)/step-fill2.gds: $(SRC) | $(TMP_DIR)
 	$(KLAYOUT_CMD) -b -zz \
 		-r ${PDK_ROOT}/${PDK}/libs.tech/klayout/tech/scripts/filler.py \
 		-rd output_file=$@ \
 		-rd no_activ \
+		-rd no_topmetal \
 		$<
 
 # Step 4b: Metal2 micro fill boost — adds 1.0x1.0 um fill cells in gaps
@@ -46,17 +47,16 @@ $(TMP_DIR)/step-fill2b.gds: $(TMP_DIR)/step-fill2.gds | $(TMP_DIR)
 $(FINAL_GDS): $(TMP_DIR)/step-fill2b.gds $(TMP_DIR)/step-fill1.gds | $(TMP_DIR)
 	./ihp_fill_combine.py $^ $@
 
-# Step 6: Run DRC check
+# Step 6: Run density check
 drc_report.log: $(FINAL_GDS)
-	$(KLAYOUT_CMD) -b -zz \
-		-r sg13g2_density.lydrc \
-		-rd in_gds=$< \
-		-rd cell=tt_ihp_wrapper \
-		-rd report_file=drc_report.xml \
-		-rd threads=16 | tee drc_report.log
+	python3 ${PDK_ROOT}/${PDK}/libs.tech/klayout/tech/drc/run_drc.py \
+		--path=$< \
+		--topcell=tt_ihp_wrapper \
+		--run_dir=drc_results \
+		--density_only | tee drc_report.log
 
 check: drc_report.log
-	grep -q "Number of DRC errors: 0" drc_report.log
+	! grep -qi "Check Failed\|Violated rules" drc_report.log
 
 clean:
-	rm -rf $(TMP_DIR)/*.gds drc_report.xml $(FINAL_GDS) drc_report.log
+	rm -rf $(TMP_DIR)/*.gds drc_results $(FINAL_GDS) drc_report.log

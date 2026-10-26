@@ -19,7 +19,7 @@ Export `PDK_ROOT` and `PDK` environment variables:
 
 ```bash
 export PDK_ROOT=<path-to-pdk>
-export PDK=ihp-sg13g2
+export PDK=ihp-sg13cmos5l
 ```
 
 Then run the following command to generate the fill geometry:

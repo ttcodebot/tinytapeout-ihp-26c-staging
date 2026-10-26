@@ -10,9 +10,8 @@ jobs:
   mpw_precheck:
     env:
       PYTHONIOENCODING: utf-8
-      TO_REPO_ROOT: ${{ github.workspace }}/TO_Repo
       PDK_ROOT: ${{ github.workspace }}/IHP-Open-PDK
-      PDK: ihp-sg13g2
+      PDK: ihp-sg13cmos5l
 
     runs-on: ubuntu-24.04
     steps:
@@ -21,16 +20,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Checkout TO repo
-        uses: actions/checkout@v7
-        with:
-          repository: IHP-GmbH/TO_Sep2025
-          path: ${{ env.TO_REPO_ROOT }}
-
       - name: Install KLayout
         shell: bash
         run: |
-          wget https://github.com/TinyTapeout/klayout/releases/download/v0.29.11/klayout_0.29.11-1_amd64.deb
+          wget https://github.com/TinyTapeout/klayout/releases/download/v0.29.12/klayout_0.29.12-1_amd64.deb
           sudo apt-get update && sudo apt-get install -y ./klayout_0.29.11-1_amd64.deb
 
       - name: Download artifact (run id = ${{ github.event.workflow_run.id }})
@@ -43,23 +36,27 @@ jobs:
           name: foundry_submission
           path: tinytapeout-submission
 
+      # There's no IHP TO_* precheck repo for sg13cmos5l, so run the PDK's minimum
+      # (foundry precheck) rule set instead.
       - name: Run DRC check
         working-directory: tinytapeout-submission
+        env:
+          PYTHONPATH: /usr/lib/klayout/pymod
         run: |
-          klayout -b -r ${{ env.TO_REPO_ROOT }}/drc/drc.lydrc -rd "in_gds"="gds/tt_ihp_wrapper_final.gds" -rd "report_file"="tt_ihp_wrapper_final.gds.lyrdb" -rd density=false 2>&1 | tee tt_ihp_wrapper_final.gds.log
-          if [ $? -ne 0 ]; then
-            echo "❌ DRC check failed" | tee -a $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
+          set +e
+          python3 $PDK_ROOT/$PDK/libs.tech/klayout/tech/drc/run_drc.py \
+            --path=gds/tt_ihp_wrapper_final.gds \
+            --topcell=tt_ihp_wrapper \
+            --run_dir=drc_results \
+            --minimum_drc --no_density 2>&1 | tee tt_ihp_wrapper_final.gds.log
+          DRC_STATUS=${PIPESTATUS[0]}
+          set -e
 
-          if [ ! -f "tt_ihp_wrapper_final.gds.lyrdb" ]; then
-            echo "❌ DRC report file not found" | tee -a $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
+          cp drc_results/*_full.lyrdb tt_ihp_wrapper_final.gds.lyrdb || true
 
-          if ! grep -q "Number of DRC errors: 0" tt_ihp_wrapper_final.gds.log; then
+          if [ $DRC_STATUS -ne 0 ]; then
             echo "## ❌ DRC errors found in the design" | tee -a $GITHUB_STEP_SUMMARY
-            grep "Number of DRC errors:" tt_ihp_wrapper_final.gds.log | tee -a $GITHUB_STEP_SUMMARY
+            grep "Violated rules" tt_ihp_wrapper_final.gds.log | tee -a $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
@@ -76,8 +73,8 @@ jobs:
 
   density_check:
     env:
-      PDK_ROOT: ${{ github.workspace }}/pdk
-      PDK: ihp-sg13g2
+      PDK_ROOT: ${{ github.workspace }}/IHP-Open-PDK
+      PDK: ihp-sg13cmos5l
     runs-on: ubuntu-24.04
     steps:
       - name: checkout repo
@@ -88,7 +85,7 @@ jobs:
       - name: Install KLayout
         shell: bash
         run: |
-          wget https://github.com/TinyTapeout/klayout/releases/download/v0.29.11/klayout_0.29.11-1_amd64.deb
+          wget https://github.com/TinyTapeout/klayout/releases/download/v0.29.12/klayout_0.29.12-1_amd64.deb
           sudo apt-get update && sudo apt-get install -y ./klayout_0.29.11-1_amd64.deb
 
       - name: Download artifact (run id = ${{ github.event.workflow_run.id }})
@@ -103,27 +100,23 @@ jobs:
 
       - name: Run Density check
         working-directory: ihp
+        env:
+          PYTHONPATH: /usr/lib/klayout/pymod
         run: |
-          klayout -b -zz \
-            -r ../IHP-Open-PDK/ihp-sg13g2/libs.tech/klayout/tech/drc/sg13g2_density.lydrc \
-            -rd in_gds=gds/tt_ihp_wrapper_final.gds \
-            -rd cell=tt_ihp_wrapper \
-            -rd report_file=density_report.xml \
-            -rd threads=16 | tee density_report.log
+          set +e
+          python3 $PDK_ROOT/$PDK/libs.tech/klayout/tech/drc/run_drc.py \
+            --path=gds/tt_ihp_wrapper_final.gds \
+            --topcell=tt_ihp_wrapper \
+            --run_dir=density_results \
+            --density_only --density_thr=4 2>&1 | tee density_report.log
+          DENSITY_STATUS=${PIPESTATUS[0]}
+          set -e
 
-          if [ $? -ne 0 ]; then
-            echo "❌ Density check failed" | tee -a $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
+          cp density_results/*_full.lyrdb density_report.xml || true
 
-          if [ ! -f "density_report.xml" ]; then
-            echo "❌ Density report file not found" | tee -a $GITHUB_STEP_SUMMARY
-            exit 1
-          fi
-
-          if ! grep -q "Number of DRC errors: 0" density_report.log; then
+          if [ $DENSITY_STATUS -ne 0 ]; then
             echo "## ❌ Density errors found in the design" | tee -a $GITHUB_STEP_SUMMARY
-            grep "Number of DRC errors:" density_report.log | tee -a $GITHUB_STEP_SUMMARY
+            grep "Violated rules" density_report.log | tee -a $GITHUB_STEP_SUMMARY
             exit 1
           fi
 
