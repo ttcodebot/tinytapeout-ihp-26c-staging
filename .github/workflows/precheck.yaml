@@ -17,12 +17,12 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: recursive
 
       - name: Checkout TO repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: IHP-GmbH/TO_Sep2025
           path: ${{ env.TO_REPO_ROOT }}
@@ -34,7 +34,7 @@ jobs:
           sudo apt-get update && sudo apt-get install -y ./klayout_0.29.11-1_amd64.deb
 
       - name: Download artifact (run id = ${{ github.event.workflow_run.id }})
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v24
         id: download_artifact
         with:
           workflow: gds.yaml
@@ -66,7 +66,7 @@ jobs:
           echo "✅ DRC check passed" | tee -a $GITHUB_STEP_SUMMARY
 
       - name: Upload precheck results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: precheck_results
@@ -81,7 +81,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -92,7 +92,7 @@ jobs:
           sudo apt-get update && sudo apt-get install -y ./klayout_0.29.11-1_amd64.deb
 
       - name: Download artifact (run id = ${{ github.event.workflow_run.id }})
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v24
         id: download_artifact
         with:
           workflow: gds.yaml
@@ -130,7 +130,7 @@ jobs:
           echo "✅ Density check passed" | tee -a $GITHUB_STEP_SUMMARY
 
       - name: Upload density check results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: always()
         with:
           name: density_check_results
