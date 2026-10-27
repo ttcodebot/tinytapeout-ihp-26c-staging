@@ -5,9 +5,8 @@
 	branch = dev-ihp-sg13cmos5l-ttihp27a
 [submodule "tt"]
 	path = tt
-	# TODO: switch back to TinyTapeout/tt-support-tools main once ihp-sg13cmos5l support is merged upstream
-	url = https://github.com/ttcodebot/tt-support-tools
-	branch = ihp-sg13cmos5l-additive
+	url = https://github.com/TinyTapeout/tt-support-tools
+	branch = main
 [submodule "IHP-Open-PDK"]
 	path = IHP-Open-PDK
 	url = https://github.com/TinyTapeout/IHP-Open-PDK
